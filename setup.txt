@@ -16,3 +16,6 @@ and then copy the confluence template into it and rename it:
 
 cp nbconflux/confluence.tpl ~/.local/share/jupyter/nbconvert/templates/confluence/index.html.j2
 
+I also installed an older version of nbconvert - not sure if it was needed or not:
+
+pip install nbconvert==6.5.4
