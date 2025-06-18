@@ -90,8 +90,8 @@ class ConfluenceExporter(HTMLExporter):
         super(ConfluenceExporter, self).__init__(config=config, **kwargs)
         self._preprocessors[-1].exporter = self
 
-        self.template_path = [os.path.abspath(os.path.dirname(__file__))]
-        self.template_file = 'confluence'
+        self.template_name = 'confluence'
+
         # Must be at least a single character, or the header generator produces
         # an (invalid?) empty anchor tag that trips up bleach during
         # sanitization
@@ -304,6 +304,13 @@ class ConfluenceExporter(HTMLExporter):
         resources['generate_toc'] = self.generate_toc
         resources['enable_mathjax'] = self.enable_mathjax
         resources['enable_style'] = self.enable_style
+
+        # Ensure all preprocessors that expect an exporter have it
+        from nbconflux.preprocessor import ConfluencePreprocessor
+
+        for preprocessor in self._preprocessors:
+            if isinstance(preprocessor, ConfluencePreprocessor):
+                preprocessor.exporter = self
 
         # Convert the notebook to Confluence storage format, which is XHTML-like
         html, resources = super(ConfluenceExporter, self).from_notebook_node(nb, resources, **kw)

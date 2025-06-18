@@ -1,0 +1,18 @@
+The existing code was having trouble finding the template.
+
+Doing this worked - maybe there is another way to let it use the existing directories:
+
+create a directory if it doesn't exist: ~/.local/share/jupyter/nbconvert/templates/confluence/
+
+put the conf.json here into it:
+
+{
+  "metadata": {
+    "name": "confluence"
+  }
+}
+
+and then copy the confluence template into it and rename it:
+
+cp nbconflux/confluence.tpl ~/.local/share/jupyter/nbconvert/templates/confluence/index.html.j2
+
