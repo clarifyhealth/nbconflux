@@ -26,11 +26,12 @@ setup(
             'nbconflux = nbconflux.cli:main'
         ]
     },
-    install_requires=[
+    install_requires=[ 
         'bleach',
         'nbconvert>=5.3',
         'requests',
         'traitlets',
-        'html5lib',
-    ],
+        'html5lib'
+    ]
+
 )
