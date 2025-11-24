@@ -31,7 +31,9 @@ setup(
         'nbconvert>=5.3',
         'requests',
         'traitlets',
-        'html5lib'
+        'html5lib',
+        'plotly',
+        'kaleido'
     ]
 
 )

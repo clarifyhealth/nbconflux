@@ -3,12 +3,14 @@ XML storage format and posts it to an existing page.
 """
 import os
 import urllib.parse as urlparse
+import re
 
 import requests
 
 from .filter import sanitize_html
 from .markdown import ConfluenceMarkdownRenderer
 from .preprocessor import ConfluencePreprocessor
+from .plotly_preprocessor import PlotlyStaticPreprocessor
 from nbconvert import HTMLExporter
 from nbconvert.filters.markdown_mistune import MarkdownWithMath
 from traitlets import Bool, List, Unicode
@@ -82,13 +84,14 @@ class ConfluenceExporter(HTMLExporter):
         return c
 
     def __init__(self, config, **kwargs):
-        config.HTMLExporter.preprocessors = [ConfluencePreprocessor]
+        config.HTMLExporter.preprocessors = [
+            PlotlyStaticPreprocessor, 
+            ConfluencePreprocessor]
         config.HTMLExporter.filters = {
             'sanitize_html': sanitize_html,
         }
 
         super(ConfluenceExporter, self).__init__(config=config, **kwargs)
-        self._preprocessors[-1].exporter = self
 
         self.template_name = 'confluence'
 
@@ -304,6 +307,21 @@ class ConfluenceExporter(HTMLExporter):
         resources['generate_toc'] = self.generate_toc
         resources['enable_mathjax'] = self.enable_mathjax
         resources['enable_style'] = self.enable_style
+        resources.setdefault('plotly', {})['format'] = 'png'
+        NEWPLOT_PATTERN = re.compile(r"Plotly\.newPlot", flags=re.MULTILINE)
+        has_plotly = any(
+                "application/vnd.plotly.v1+json" in output.get("data", {}) or
+                NEWPLOT_PATTERN.search(output.get("data", {}).get("text/html", ""))
+                for cell in nb.cells if cell.cell_type == "code"
+                for output in cell.get("outputs", [])
+        )
+
+        if has_plotly:
+            print(f"{self.notebook_filename} contains plotly metadata.")
+            from nbconflux.plotly_preprocessor import PlotlyStaticPreprocessor
+            pp_plotly = PlotlyStaticPreprocessor()
+            nb, resources = pp_plotly.preprocess(nb, resources)
+
 
         # Ensure all preprocessors that expect an exporter have it
         from nbconflux.preprocessor import ConfluencePreprocessor
@@ -314,7 +332,31 @@ class ConfluenceExporter(HTMLExporter):
 
         # Convert the notebook to Confluence storage format, which is XHTML-like
         html, resources = super(ConfluenceExporter, self).from_notebook_node(nb, resources, **kw)
+        if has_plotly:
+            outputs = resources.get("outputs", {})
+            for filename in outputs.keys():
+                if filename.lower().endswith(".png"):
+                    html += (
+                        f'<p><ac:image>'
+                        f'<ri:attachment ri:filename="{filename}" />'
+                        f'</ac:image></p>'
+                    )
+            
+            # Remove all jp-RenderedImage blocks (including nested divs)
+            html = re.sub(
+                r'<div class="jp-OutputArea-child">.*?<div class="jp-RenderedImage jp-OutputArea-output".*?</div>.*?</div>',
+                '',
+                html,
+                flags=re.DOTALL
+            )
 
+            # Remove END OF REPORT section
+            html = re.sub(
+                r'<h5 id="END-OF-REPORT">END OF REPORT.*?</h5>',
+                '',
+                html,
+                flags=re.DOTALL
+            )
         # Update the page with the new content
         self.update_page(self.page_id, html)
         # Add the nbconflux label to the page for tracking
@@ -327,6 +369,7 @@ class ConfluenceExporter(HTMLExporter):
         # Create or update all attachments on the page
         for filename, data in resources.get('outputs', {}).items():
             self.add_or_update_attachment(filename, data, resources)
+        
 
         # Create or update the notebook document attachment on the page
         if self.attach_ipynb:
