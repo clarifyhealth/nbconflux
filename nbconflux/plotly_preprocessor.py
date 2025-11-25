@@ -75,7 +75,7 @@ class PlotlyStaticPreprocessor(Preprocessor):
         Configure Kaleido to use the Chromium binary installed by
         plotly_get_chrome 
         """
-        chromium = os.environ.get("KALIEDO_EXECUTABLE_PATH")
+        chromium = os.environ.get("KALEIDO_EXECUTABLE_PATH")
         if chromium:
             pio.defaults.kaleido = {
                 "chromium_executable": chromium
