@@ -69,22 +69,9 @@ class PlotlyStaticPreprocessor(Preprocessor):
         layout["template"] = template
         fig_json["layout"] = layout
     
-    @staticmethod
-    def _configure_kaleido():
-        """
-        Configure Kaleido to use the Chromium binary installed by
-        plotly_get_chrome 
-        """
-        chromium = os.environ.get("KALEIDO_EXECUTABLE_PATH")
-        if chromium:
-            pio.defaults.kaleido = {
-                "chromium_executable": chromium
-            }
-
 
     def preprocess(self, nb, resources):
         """Main nbconvert hook. Replaces Plotly JS with static PNG output."""
-        self._configure_kaleido()
         resources = resources or {}
         outputs_store = resources.setdefault("outputs", {})
 

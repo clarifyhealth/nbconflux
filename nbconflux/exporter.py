@@ -282,6 +282,7 @@ class ConfluenceExporter(HTMLExporter):
                                               use_xhtml=True,
                                               anchor_link_text=self.anchor_link_text)
         return MarkdownWithMath(renderer=renderer).render(source)
+    
 
     def from_notebook_node(self, nb, resources=None, **kw):
         """Publishes a notebook to Confluence given a notebook object
@@ -299,6 +300,13 @@ class ConfluenceExporter(HTMLExporter):
         2-tuple
             Published Confluence storage format HTML and nbconvert resources
         """
+        chromium = os.environ.get("KALEIDO_EXECUTABLE_PATH")
+        print("[DEBUG] Exporter sees chrome:", chromium)
+
+        if chromium:
+            pio.defaults.kaleido = {"chromium_executable": chromium}
+        print("[DEBUG] pio.defaults.kaleido set:", pio.defaults.kaleido)
+
         if self.notebook_filename is None:
             raise ValueError('only from_filename is supported')
 
