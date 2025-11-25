@@ -3,15 +3,15 @@ import ast
 import uuid
 import base64
 import os
+import tempfile
 import plotly.graph_objects as go
-import plotly.io as pio
 from nbconvert.preprocessors import Preprocessor
 from nbformat.v4 import new_output
 
 
 class PlotlyStaticPreprocessor(Preprocessor):
     """
-    Converts interactive Plotly JS outputs into static PNG images for nbconvert.
+    Converts interactive Plotly JS outputs into static PNG images
     """
 
     NEWPLOT_PATTERN = re.compile(
@@ -38,13 +38,16 @@ class PlotlyStaticPreprocessor(Preprocessor):
         match = self.NEWPLOT_PATTERN.search(html)
         if not match:
             return None
+
         fix = self._fix_js
         try:
             data = ast.literal_eval(fix(match.group("data")))
             layout = ast.literal_eval(fix(match.group("layout")))
             cfg_str = match.group("config")
             config = ast.literal_eval(fix(cfg_str)) if cfg_str else {}
+
             return {"data": data, "layout": layout, "config": config}
+
         except Exception as e:
             print(f"Plotly JSON parse failed: {e}")
             return None
@@ -68,7 +71,6 @@ class PlotlyStaticPreprocessor(Preprocessor):
 
         layout["template"] = template
         fig_json["layout"] = layout
-    
 
     def preprocess(self, nb, resources):
         """Main nbconvert hook. Replaces Plotly JS with static PNG output."""
@@ -93,12 +95,19 @@ class PlotlyStaticPreprocessor(Preprocessor):
                     continue
 
                 self.normalize_heatmapgl(fig_json)
+
                 try:
                     fig = go.Figure(
                         data=fig_json["data"],
                         layout=fig_json.get("layout", {})
                     )
-                    png_bytes = pio.to_image(fig, format="png")
+                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                        tmp_path = tmp.name
+                    fig.write_image(tmp_path, format="png")
+                    with open(tmp_path, "rb") as f:
+                        png_bytes = f.read()
+                    os.remove(tmp_path)
+
                 except Exception as e:
                     print(f"Plotly to PNG conversion failed: {e}")
                     new_outputs.append(out)
@@ -112,13 +121,10 @@ class PlotlyStaticPreprocessor(Preprocessor):
                     new_output(
                         output_type="display_data",
                         data={"image/png": png_b64},
-                        metadata={
-                            "image/png": {
-                                "width": fig.layout.width or 700
-                            }
-                        },
+                        metadata={"image/png": {"width": fig.layout.width or 700}},
                     )
                 )
+
             cell["outputs"] = new_outputs
 
         return nb, resources
