@@ -2,6 +2,7 @@ import re
 import ast
 import uuid
 import base64
+import os
 import plotly.graph_objects as go
 import plotly.io as pio
 from nbconvert.preprocessors import Preprocessor
@@ -67,10 +68,23 @@ class PlotlyStaticPreprocessor(Preprocessor):
 
         layout["template"] = template
         fig_json["layout"] = layout
+    
+    @staticmethod
+    def _configure_kaleido():
+        """
+        Configure Kaleido to use the Chromium binary installed by
+        plotly_get_chrome 
+        """
+        chromium = os.environ.get("KALIEDO_EXECUTABLE_PATH")
+        if chromium:
+            pio.defaults.kaleido = {
+                "chromium_executable": chromium
+            }
 
 
     def preprocess(self, nb, resources):
         """Main nbconvert hook. Replaces Plotly JS with static PNG output."""
+        self._configure_kaleido()
         resources = resources or {}
         outputs_store = resources.setdefault("outputs", {})
 
