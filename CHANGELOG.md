@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.12] - 2026-04-10
 
 ### Added
 - CircleCI deployment pipeline with jobs for sensitive-information checks, build-and-test, and artifact publishing
@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ConfluenceMarkdownRenderer.image()` updated for `mistune>=3.0` API (argument order changed from `src, title, alt` to `alt, url, title`)
 - `filter.py` updated for `bleach>=6.0` API: replaced deprecated `styles=` kwarg with `css_sanitizer=CSSSanitizer(...)`
 - Test assertions updated to match current `bleach`/`html5lib` serialization (`<ri:url ...></ri:url>` instead of `<ri:url ... />`) and Pygments quote encoding
+- Papermill `injected-parameters` cells are now filtered from output (added to `TagRemovePreprocessor.remove_cell_tags`)
+- Minified Plotly JS bundle no longer appears as visible text: `script` added to `ALLOWED_TAGS` and `REMOVED_TAGS` so `RemovalFilter` strips tag and content
+- Table cell alignment preserved: `style` attribute allowed on `td` and `th` in `ALLOWED_ATTRS`
+- END OF REPORT heading removal now applies to all notebooks, not just those with Plotly charts
 
 ## [1.0.11] - 2025-11-25
 

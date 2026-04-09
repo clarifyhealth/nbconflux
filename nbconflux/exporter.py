@@ -73,7 +73,7 @@ class ConfluenceExporter(HTMLExporter):
                 'exclude_output_prompt': True
             },
             'TagRemovePreprocessor': {
-                'remove_cell_tags': {'remove_cell', 'nocell', 'no-cell', 'no_cell', 'parameters'},
+                'remove_cell_tags': {'remove_cell', 'nocell', 'no-cell', 'no_cell', 'parameters', 'injected-parameters'},
                 'remove_input_tags': {'remove_input', 'noinput', 'no-input', 'no_input'},
                 'remove_all_outputs_tags': {'nooutput', 'no-output', 'no_output'},
                 'enabled': True
@@ -350,13 +350,14 @@ class ConfluenceExporter(HTMLExporter):
                 flags=re.DOTALL
             )
 
-            # Remove END OF REPORT section
-            html = re.sub(
-                r'<h5 id="END-OF-REPORT">END OF REPORT.*?</h5>',
-                '',
-                html,
-                flags=re.DOTALL
-            )
+        # Remove END OF REPORT section (applies to all notebooks)
+        html = re.sub(
+            r'<h5 id="END-OF-REPORT">END OF REPORT.*?</h5>',
+            '',
+            html,
+            flags=re.DOTALL
+        )
+
         # Update the page with the new content
         self.update_page(self.page_id, html)
         # Add the nbconflux label to the page for tracking

@@ -93,6 +93,20 @@ jobs:
             . venv/bin/activate
             pip install twine==6.1.0
       - run:
+          name: Tag release from CHANGELOG
+          command: |
+            VERSION=$(grep -m1 '## \[[0-9]' CHANGELOG.md | sed 's/.*\[\([^]]*\)\].*/\1/')
+            echo "CHANGELOG version: $VERSION"
+            if git rev-parse "$VERSION" >/dev/null 2>&1; then
+              echo "Tag $VERSION already exists, skipping"
+            else
+              git config user.email "ci@circleci"
+              git config user.name "CircleCI"
+              git tag "$VERSION"
+              git push origin "$VERSION"
+              echo "Tagged and pushed $VERSION"
+            fi
+      - run:
           name: Init .pypirc
           command: |
             aws codeartifact login --tool twine --repository clarifypypi --domain clarifyhealth --domain-owner 947634201780
