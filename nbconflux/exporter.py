@@ -69,7 +69,7 @@ class ConfluenceExporter(HTMLExporter):
                 'exclude_output_prompt': True
             },
             'TagRemovePreprocessor': {
-                'remove_cell_tags': {'remove_cell', 'nocell', 'no-cell', 'no_cell'},
+                'remove_cell_tags': {'remove_cell', 'nocell', 'no-cell', 'no_cell', 'parameters'},
                 'remove_input_tags': {'remove_input', 'noinput', 'no-input', 'no_input'},
                 'remove_all_outputs_tags': {'nooutput', 'no-output', 'no_output'},
                 'enabled': True

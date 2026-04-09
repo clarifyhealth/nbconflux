@@ -83,9 +83,13 @@ class PlotlyStaticPreprocessor(Preprocessor):
 
             new_outputs = []
             for out in cell.get("outputs", []):
+                out_data = out.get("data", {})
+                html = out_data.get("text/html")
 
-                html = out.get("data", {}).get("text/html")
                 if not html:
+                    # Skip Plotly-only outputs (static fallbacks) — we render our own PNG from the HTML version
+                    if "application/vnd.plotly.v1+json" in out_data:
+                        continue
                     new_outputs.append(out)
                     continue
 

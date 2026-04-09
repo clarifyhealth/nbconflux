@@ -102,6 +102,9 @@ def test_post_to_confluence(notebook_path, page_url, server):
     assert "<pre>This cell output is hidden" not in html
     # Cell completely hidden
     assert 'This cell is completely hidden.' not in html
+    # Parameters cell not exported
+    assert 'data_sources_to_be_released' not in html
+    assert 'release_yr_mnth' not in html
     # Notebook linked in footer
     assert '<a href="http://confluence.localhost/download/attachments/12345/nbconflux-test.ipynb?version=1">nbconflux-test.ipynb</a>' in html
     # MathJax not included
