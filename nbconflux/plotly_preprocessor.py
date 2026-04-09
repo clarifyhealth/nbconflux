@@ -85,6 +85,8 @@ class PlotlyStaticPreprocessor(Preprocessor):
             for out in cell.get("outputs", []):
                 out_data = out.get("data", {})
                 html = out_data.get("text/html")
+                if isinstance(html, list):
+                    html = "".join(html)
 
                 if not html:
                     # Skip Plotly-only outputs (static fallbacks) — we render our own PNG from the HTML version
