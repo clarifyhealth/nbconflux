@@ -1,6 +1,7 @@
 import re
 
 from bleach import Cleaner
+from bleach.css_sanitizer import CSSSanitizer
 from html5lib.filters.base import Filter
 
 # Tags, attributes, and styles allowed in Confluence storage format according to
@@ -29,6 +30,7 @@ REMOVED_TAGS = ['style']
 
 EMPTY_TAG_REGEX = re.compile('<(hr|br)>')
 
+
 class RemovalFilter(Filter):
     """Removes tags and all of their descendants."""
     def __iter__(self):
@@ -53,7 +55,7 @@ def sanitize_html(source):
     html = Cleaner(
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRS,
-        styles=ALLOWED_STYLES,
+        css_sanitizer=CSSSanitizer(allowed_css_properties=ALLOWED_STYLES),
         filters=[RemovalFilter],
         strip=True,
         strip_comments=True

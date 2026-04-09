@@ -26,14 +26,15 @@ setup(
             'nbconflux = nbconflux.cli:main'
         ]
     },
-    install_requires=[ 
-        'bleach',
-        'nbconvert>=5.3',
-        'requests',
-        'traitlets',
-        'html5lib',
+    install_requires=[
+        'bleach>=6.0',
+        'html5lib>=1.1',
+        'mistune>=3.0',
+        'nbconvert>=7.0',
+        'requests>=2.20',
+        'traitlets>=5.0',
         'plotly',
-        'kaleido'
+        'kaleido',
     ]
 
 )
