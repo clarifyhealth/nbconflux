@@ -24,7 +24,7 @@
 {% block data_png scoped %}
 <div class="output_png output_subarea {{ extra_class }}">
 {%- if 'image/png' in output.metadata.get('filenames', {}) %}
-<ac:image><ri:url ri:value="{{ resources['attachments'][output.metadata.filenames['image/png']].download_url }}" /></ac:image>
+<ac:image ac:width="700"><ri:url ri:value="{{ resources['attachments'][output.metadata.filenames['image/png']].download_url }}" /></ac:image>
 {%- endif %}
 </div>
 {%- endblock data_png %}
@@ -32,7 +32,7 @@
 {% block data_jpg scoped %}
 <div class="output_jpeg output_subarea {{ extra_class }}">
 {%- if 'image/jpeg' in output.metadata.get('filenames', {}) %}
-<ac:image><ri:url ri:value="{{ resources['attachments'][output.metadata.filenames['image/jpeg']].download_url }}" /></ac:image>
+<ac:image ac:width="700"><ri:url ri:value="{{ resources['attachments'][output.metadata.filenames['image/jpeg']].download_url }}" /></ac:image>
 {%- endif %}
 </div>
 {%- endblock data_jpg %}
