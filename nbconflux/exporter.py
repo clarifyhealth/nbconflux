@@ -70,7 +70,8 @@ class ConfluenceExporter(HTMLExporter):
             },
             'TemplateExporter': {
                 'exclude_input_prompt': True,
-                'exclude_output_prompt': True
+                'exclude_output_prompt': True,
+                'exclude_input': True,
             },
             'TagRemovePreprocessor': {
                 'remove_cell_tags': {'remove_cell', 'nocell', 'no-cell', 'no_cell', 'parameters', 'injected-parameters'},
@@ -353,6 +354,14 @@ class ConfluenceExporter(HTMLExporter):
         # Remove END OF REPORT section (applies to all notebooks)
         html = re.sub(
             r'<h5 id="END-OF-REPORT">END OF REPORT.*?</h5>',
+            '',
+            html,
+            flags=re.DOTALL
+        )
+
+        # Remove "Parameters Used:" heading and its table
+        html = re.sub(
+            r'<h4[^>]*id="Parameters-Used[^"]*"[^>]*>.*?</table>',
             '',
             html,
             flags=re.DOTALL

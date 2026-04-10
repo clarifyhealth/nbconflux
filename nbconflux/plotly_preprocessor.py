@@ -1,6 +1,5 @@
 import re
 import ast
-import uuid
 import base64
 import os
 import tempfile
@@ -75,7 +74,7 @@ class PlotlyStaticPreprocessor(Preprocessor):
     def preprocess(self, nb, resources):
         """Main nbconvert hook. Replaces Plotly JS with static PNG output."""
         resources = resources or {}
-        outputs_store = resources.setdefault("outputs", {})
+        resources.setdefault("outputs", {})
 
         for cell in nb.cells:
             if cell.cell_type != "code":
@@ -120,8 +119,6 @@ class PlotlyStaticPreprocessor(Preprocessor):
                     new_outputs.append(out)
                     continue
 
-                fname = f"plotly_static_{uuid.uuid4().hex}.png"
-                outputs_store[fname] = png_bytes
                 png_b64 = base64.b64encode(png_bytes).decode()
 
                 new_outputs.append(
