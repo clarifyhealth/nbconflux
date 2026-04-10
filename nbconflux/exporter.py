@@ -70,7 +70,8 @@ class ConfluenceExporter(HTMLExporter):
             },
             'TemplateExporter': {
                 'exclude_input_prompt': True,
-                'exclude_output_prompt': True
+                'exclude_output_prompt': True,
+                'exclude_input': True,
             },
             'TagRemovePreprocessor': {
                 'remove_cell_tags': {'remove_cell', 'nocell', 'no-cell', 'no_cell', 'parameters', 'injected-parameters'},
