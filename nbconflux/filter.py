@@ -1,6 +1,7 @@
 import re
 
 from bleach import Cleaner
+from bleach.css_sanitizer import CSSSanitizer
 from html5lib.filters.base import Filter
 
 # Tags, attributes, and styles allowed in Confluence storage format according to
@@ -11,8 +12,8 @@ ALLOWED_TAGS = ['a', 'ac:image', 'ac:layout', 'ac:layout-cell', 'ac:layout-secti
                 'ri:attachment', 'ri:page', 'ri:url', 'small', 'span', 'strong', 'sub', 'sup',
                 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'tt', 'u', 'ul',
                 'ac:structured-macro', 'ac:parameter',
-                # Allow for full removal with RemovalFilter
-                'style']
+                # Allow for full removal with RemovalFilter (tag + content stripped)
+                'style', 'script']
 
 ALLOWED_ATTRS = {'*': ['class'], 'a': ['href', 'title'], 'span': ['style'],
                  'ri:page': ['ri:content-title'], 'ri:attachment': ['ri:filename'],
@@ -20,14 +21,15 @@ ALLOWED_ATTRS = {'*': ['class'], 'a': ['href', 'title'], 'span': ['style'],
                  'ri:url': ['ri:value'], 'ac:layout-section': ['ac:type'],
                  'ac:parameter': ['ac:name'],
                  'ac:structured-macro': ['ac:name', 'ac:schema-version'],
-                 'td': ['rowspan', 'colspan'], 'th': ['rowspan', 'colspan']}
+                 'td': ['rowspan', 'colspan', 'style'], 'th': ['rowspan', 'colspan', 'style']}
 
 ALLOWED_STYLES = ['color', 'text-align', 'text-decoration']
 
 # Tags that will be removed along with all of their descendants
-REMOVED_TAGS = ['style']
+REMOVED_TAGS = ['style', 'script']
 
 EMPTY_TAG_REGEX = re.compile('<(hr|br)>')
+
 
 class RemovalFilter(Filter):
     """Removes tags and all of their descendants."""
@@ -53,7 +55,7 @@ def sanitize_html(source):
     html = Cleaner(
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRS,
-        styles=ALLOWED_STYLES,
+        css_sanitizer=CSSSanitizer(allowed_css_properties=ALLOWED_STYLES),
         filters=[RemovalFilter],
         strip=True,
         strip_comments=True

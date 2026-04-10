@@ -1,4 +1,4 @@
-from .api import notebook_to_page
+from .api import notebook_to_page  # noqa: F401
 
 # These three lines comes from versioneer.
 # Add to this file if you want, but do not remove these.

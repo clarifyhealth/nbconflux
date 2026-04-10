@@ -1,7 +1,8 @@
-bleach
-html5lib
-nbconvert>=5.3
-requests
-traitlets
+bleach>=6.0
+html5lib>=1.1
+mistune>=3.0
+nbconvert>=7.0
+requests>=2.20
+traitlets>=5.0
 plotly
 kaleido

@@ -29,8 +29,8 @@ class PlotlyStaticPreprocessor(Preprocessor):
         """Convert JS syntax to valid Python syntax."""
         return (
             js.replace("null", "None")
-               .replace("true", "True")
-               .replace("false", "False")
+            .replace("true", "True")
+            .replace("false", "False")
         )
 
     def extract_plotly_json(self, html: str):
@@ -83,9 +83,16 @@ class PlotlyStaticPreprocessor(Preprocessor):
 
             new_outputs = []
             for out in cell.get("outputs", []):
+                out_data = out.get("data", {})
+                html = out_data.get("text/html")
+                if isinstance(html, list):
+                    html = "".join(html)
 
-                html = out.get("data", {}).get("text/html")
                 if not html:
+                    # Skip Plotly-only outputs (static fallbacks) —
+                    # we render our own PNG from the HTML version
+                    if "application/vnd.plotly.v1+json" in out_data:
+                        continue
                     new_outputs.append(out)
                     continue
 

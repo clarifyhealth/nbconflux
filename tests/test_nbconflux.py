@@ -94,14 +94,17 @@ def test_post_to_confluence(notebook_path, page_url, server):
     # Makrdown image is <ac:image>
     assert '<ac:image ac:alt="Juputer Logo"><ri:url ri:value="http://jupyter.org/assets/nav_logo.svg"></ri:url></ac:image>' in html
     # Image is a properly versioned attachment
-    assert '<ac:image><ri:url ri:value="http://confluence.localhost/download/attachments/12345/output_6_0.png?version=6" /></ac:image>' in html
+    assert '<ac:image><ri:url ri:value="http://confluence.localhost/download/attachments/12345/output_6_0.png?version=6"></ri:url></ac:image>' in html
     # Input hidden, output shown
     assert 'sns.violinplot' not in html
     # Output hidden, input shown
-    assert "&quot;This cell output is hidden.&quot;" in html
+    assert '"This cell output is hidden."' in html
     assert "<pre>This cell output is hidden" not in html
     # Cell completely hidden
     assert 'This cell is completely hidden.' not in html
+    # Parameters cell not exported
+    assert 'data_sources_to_be_released' not in html
+    assert 'release_yr_mnth' not in html
     # Notebook linked in footer
     assert '<a href="http://confluence.localhost/download/attachments/12345/nbconflux-test.ipynb?version=1">nbconflux-test.ipynb</a>' in html
     # MathJax not included
@@ -170,6 +173,7 @@ def test_optional_components(notebook_path, page_url, server):
     # Mock current page version lookup
     server.add('GET', 'http://confluence.localhost/rest/api/content/12345',
         json={
+            'title': 'fake-title',
             'version': {
                 'number': 100
             }

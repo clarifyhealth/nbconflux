@@ -49,11 +49,15 @@ class ConfluenceExporter(HTMLExporter):
     url = Unicode(config=True, help='Confluence URL to update with notebook content')
     username = Unicode(config=True, help='Confluence username')
     password = Unicode(config=True, help='Confluence password')
-    generate_toc = Bool(config=True, default_value=True, help='Show a table of contents at the top of the page?')
-    attach_ipynb = Bool(config=True, default_value=True, help='Attach the notebook ipynb to the page?')
+    generate_toc = Bool(config=True, default_value=True,
+                        help='Show a table of contents at the top of the page?')
+    attach_ipynb = Bool(config=True, default_value=True,
+                        help='Attach the notebook ipynb to the page?')
     enable_style = Bool(config=True, default_value=True, help='Add basic Jupyter stylesheet?')
-    enable_mathjax = Bool(config=True, default_value=False, help='Add MathJax to the page to render equations?')
-    extra_labels = List(config=True, trait=Unicode(), help='List of additional labels to add to the page')
+    enable_mathjax = Bool(config=True, default_value=False,
+                          help='Add MathJax to the page to render equations?')
+    extra_labels = List(config=True, trait=Unicode(),
+                        help='List of additional labels to add to the page')
 
     @property
     def default_config(self):
@@ -69,7 +73,7 @@ class ConfluenceExporter(HTMLExporter):
                 'exclude_output_prompt': True
             },
             'TagRemovePreprocessor': {
-                'remove_cell_tags': {'remove_cell', 'nocell', 'no-cell', 'no_cell'},
+                'remove_cell_tags': {'remove_cell', 'nocell', 'no-cell', 'no_cell', 'parameters', 'injected-parameters'},
                 'remove_input_tags': {'remove_input', 'noinput', 'no-input', 'no_input'},
                 'remove_all_outputs_tags': {'nooutput', 'no-output', 'no_output'},
                 'enabled': True
@@ -84,8 +88,13 @@ class ConfluenceExporter(HTMLExporter):
         return c
 
     def __init__(self, config, **kwargs):
+        pkg_dir = os.path.dirname(os.path.abspath(__file__))
+        config.HTMLExporter.extra_template_basedirs = [
+            os.path.join(pkg_dir, 'templates')
+        ]
+        config.HTMLExporter.template_name = 'confluence'
         config.HTMLExporter.preprocessors = [
-            PlotlyStaticPreprocessor, 
+            PlotlyStaticPreprocessor,
             ConfluencePreprocessor]
         config.HTMLExporter.filters = {
             'sanitize_html': sanitize_html,
@@ -159,11 +168,9 @@ class ConfluenceExporter(HTMLExporter):
             space = segs[2]
             title = segs[3]
 
-            resp = requests.get('{server}/rest/api/content?title={title}&spaceKey={space}'.format(server=server,
-                                                                                                  title=title,
-                                                                                                  space=space),
-                                auth=(self.username, self.password)
-                               )
+            url = ('{server}/rest/api/content?title={title}&spaceKey={space}'
+                   .format(server=server, title=title, space=space))
+            resp = requests.get(url, auth=(self.username, self.password))
             resp.raise_for_status()
             results = resp.json()['results']
             if not results:
@@ -202,21 +209,23 @@ class ConfluenceExporter(HTMLExporter):
         title = content['title']
 
         # Update the page with the new content.
-        resp = requests.put('{server}/rest/api/content/{page_id}'.format(server=self.server,
-                                                                         page_id=page_id),
-                            json={
-                               'version': {"number":version + 1},
-                               'title': title,
-                               'type': 'page',
-                               'body': {
-                                   'storage': {
-                                       'representation': 'storage',
-                                       'value': body
-                                   }
-                               }
-                            },
-                            auth=(self.username, self.password)
-                           )
+        url = ('{server}/rest/api/content/{page_id}'
+               .format(server=self.server, page_id=page_id))
+        resp = requests.put(
+            url,
+            json={
+                'version': {'number': version + 1},
+                'title': title,
+                'type': 'page',
+                'body': {
+                    'storage': {
+                        'representation': 'storage',
+                        'value': body
+                    }
+                }
+            },
+            auth=(self.username, self.password)
+        )
         resp.raise_for_status()
 
     def add_label(self, page_id, label):
@@ -322,7 +331,6 @@ class ConfluenceExporter(HTMLExporter):
             pp_plotly = PlotlyStaticPreprocessor()
             nb, resources = pp_plotly.preprocess(nb, resources)
 
-
         # Ensure all preprocessors that expect an exporter have it
         from nbconflux.preprocessor import ConfluencePreprocessor
 
@@ -333,30 +341,23 @@ class ConfluenceExporter(HTMLExporter):
         # Convert the notebook to Confluence storage format, which is XHTML-like
         html, resources = super(ConfluenceExporter, self).from_notebook_node(nb, resources, **kw)
         if has_plotly:
-            outputs = resources.get("outputs", {})
-            for filename in outputs.keys():
-                if filename.lower().endswith(".png"):
-                    html += (
-                        f'<p><ac:image>'
-                        f'<ri:attachment ri:filename="{filename}" />'
-                        f'</ac:image></p>'
-                    )
-            
             # Remove all jp-RenderedImage blocks (including nested divs)
             html = re.sub(
-                r'<div class="jp-OutputArea-child">.*?<div class="jp-RenderedImage jp-OutputArea-output".*?</div>.*?</div>',
+                r'<div class="jp-OutputArea-child">.*?'
+                r'<div class="jp-RenderedImage jp-OutputArea-output".*?</div>.*?</div>',
                 '',
                 html,
                 flags=re.DOTALL
             )
 
-            # Remove END OF REPORT section
-            html = re.sub(
-                r'<h5 id="END-OF-REPORT">END OF REPORT.*?</h5>',
-                '',
-                html,
-                flags=re.DOTALL
-            )
+        # Remove END OF REPORT section (applies to all notebooks)
+        html = re.sub(
+            r'<h5 id="END-OF-REPORT">END OF REPORT.*?</h5>',
+            '',
+            html,
+            flags=re.DOTALL
+        )
+
         # Update the page with the new content
         self.update_page(self.page_id, html)
         # Add the nbconflux label to the page for tracking
@@ -369,7 +370,6 @@ class ConfluenceExporter(HTMLExporter):
         # Create or update all attachments on the page
         for filename, data in resources.get('outputs', {}).items():
             self.add_or_update_attachment(filename, data, resources)
-        
 
         # Create or update the notebook document attachment on the page
         if self.attach_ipynb:

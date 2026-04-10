@@ -8,7 +8,7 @@ from collections import namedtuple
 import requests
 
 from nbconvert.preprocessors import Preprocessor
-from traitlets import Instance, Any
+from traitlets import Instance
 
 
 Attachment = namedtuple('Attachment', 'id version download_url upload_url')
@@ -92,9 +92,10 @@ class ConfluencePreprocessor(Preprocessor):
                 upload_url = ('{server}/rest/api/content/{page_id}/child/attachment'
                               .format(server=self.exporter.server, page_id=self.exporter.page_id))
             else:
-                upload_url = ('{server}/rest/api/content/{page_id}/child/attachment/{attachment_id}/data'
-                              .format(server=self.exporter.server, page_id=self.exporter.page_id,
-                                      attachment_id=attachment_id))
+                upload_url = (
+                    '{server}/rest/api/content/{page_id}/child/attachment/{attachment_id}/data'
+                    .format(server=self.exporter.server, page_id=self.exporter.page_id,
+                            attachment_id=attachment_id))
 
             # Populate the download url template
             download_url = ('{server}/download/attachments/{page_id}/{filename}?version={version}'
@@ -102,6 +103,7 @@ class ConfluencePreprocessor(Preprocessor):
                                     filename=filename, version=attachment_version+1))
 
             # Keep the URL in the resources for later lookup in the page template
-            resources['attachments'][filename] = Attachment(attachment_id, attachment_version, download_url, upload_url)
+            resources['attachments'][filename] = Attachment(
+                attachment_id, attachment_version, download_url, upload_url)
 
         return nb, resources
