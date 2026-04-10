@@ -359,14 +359,6 @@ class ConfluenceExporter(HTMLExporter):
             flags=re.DOTALL
         )
 
-        # Remove "Parameters Used:" heading and its table
-        html = re.sub(
-            r'<h4[^>]*id="Parameters-Used[^"]*"[^>]*>.*?</table>',
-            '',
-            html,
-            flags=re.DOTALL
-        )
-
         # Update the page with the new content
         self.update_page(self.page_id, html)
         # Add the nbconflux label to the page for tracking
