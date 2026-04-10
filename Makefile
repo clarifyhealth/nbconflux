@@ -1,4 +1,4 @@
-.PHONY: help clean dev-env sdist release test test-debug
+.PHONY: help clean dev-env sdist release test test-debug install-git-secrets-circleci
 
 # Shell that make should use
 SHELL:=bash
@@ -26,3 +26,7 @@ test: clean ## Make a test run with coverage report
 
 test-debug: clean ## Make a test run with pdb enabled
 	python run_tests.py -vxrs --pdb tests/
+
+install-git-secrets-circleci: ## Install git-secrets on CircleCI
+	git clone https://github.com/awslabs/git-secrets.git
+	cd git-secrets && sudo make install
