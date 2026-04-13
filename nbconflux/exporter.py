@@ -90,9 +90,14 @@ class ConfluenceExporter(HTMLExporter):
 
     def __init__(self, config, **kwargs):
         pkg_dir = os.path.dirname(os.path.abspath(__file__))
+        from jupyter_core.paths import jupyter_path
+        nbconvert_template_dirs = [
+            p for p in jupyter_path('nbconvert', 'templates')
+            if os.path.isdir(p)
+        ]
         config.HTMLExporter.extra_template_basedirs = [
             os.path.join(pkg_dir, 'templates')
-        ]
+        ] + nbconvert_template_dirs
         config.HTMLExporter.template_name = 'confluence'
         config.HTMLExporter.preprocessors = [
             PlotlyStaticPreprocessor,
