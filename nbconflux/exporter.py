@@ -91,10 +91,18 @@ class ConfluenceExporter(HTMLExporter):
     def __init__(self, config, **kwargs):
         pkg_dir = os.path.dirname(os.path.abspath(__file__))
         from jupyter_core.paths import jupyter_path
+        import nbconvert as _nbconvert
         nbconvert_template_dirs = [
             p for p in jupyter_path('nbconvert', 'templates')
             if os.path.isdir(p)
         ]
+        # In Docker, jupyter_path may return no valid dirs. Always include
+        # nbconvert's own package templates dir so basic/index.html.j2 is found.
+        nbconvert_pkg_templates = os.path.join(
+            os.path.dirname(os.path.abspath(_nbconvert.__file__)), 'templates'
+        )
+        if os.path.isdir(nbconvert_pkg_templates) and nbconvert_pkg_templates not in nbconvert_template_dirs:
+            nbconvert_template_dirs.append(nbconvert_pkg_templates)
         config.HTMLExporter.extra_template_basedirs = [
             os.path.join(pkg_dir, 'templates')
         ] + nbconvert_template_dirs
